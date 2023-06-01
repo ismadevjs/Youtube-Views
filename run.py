@@ -14,41 +14,54 @@ import pyautogui
 import time
 import random
 import httpagentparser
-import math 
+import math
 
+
+# functions
 def userAgent(file):
-    with open(file, 'r') as f:
+    with open(file, "r") as f:
         lines = f.readlines()
         return random.choice(lines)
+
 
 def goto(linenum):
     global line
     line = linenum
+
 
 def user_agent_detect():
     user_agent = UserAgent()
     random_user_agent = user_agent.random
     return random_user_agent
 
-print(httpagentparser.simple_detect(user_agent_detect())[0])
+
+print(httpagentparser.simple_detect(user_agent_detect())[1])
 
 
-if (httpagentparser.simple_detect(user_agent_detect())[0] == 'Unknown OS' or httpagentparser.simple_detect(user_agent_detect())[0] == 'Windows Vista'):
+if (
+    httpagentparser.simple_detect(user_agent_detect())[0] == "Unknown OS"
+    or "Microsoft Internet Explorer"
+    not in httpagentparser.simple_detect(user_agent_detect())[1]
+    or httpagentparser.simple_detect(user_agent_detect())[0] == "Windows Vista"
+):
     user_agent_detect()
 
-
+# arguments
 chrome_options = Options()
-chrome_options.add_argument(f'user-agent={user_agent_detect()}')
+chrome_options.add_argument(f"user-agent={user_agent_detect()}")
 chrome_options.add_argument("--mute-audio")
+# chrome_options.add_argument("--start-maximized")
 chrome_options.add_experimental_option("detach", True)
 chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+
+
 browser = webdriver.Chrome(chrome_options=chrome_options)
 browser.get("http://youtube.com/")
 
-
-
-
 time.sleep(3)
+
+# functions
+
 
 def timeCalc(val):
     tm = val.split(":")
@@ -79,13 +92,15 @@ def r_scroll():
 def mouseControl(elm):
     location = elm.location
     size = elm.size
-    absolute_x = location["x"] + size["width"]
-    absolute_y = location["y"] + size["height"] + 80
+    absolute_x = location["x"] + size["width"] - 25
+    absolute_y = location["y"] + size["height"] + 65
     pyautogui.moveTo(absolute_x, absolute_y, duration=0.5)
     time.sleep(1.5)
 
+
 def click_on_current_youtube_channel():
     return
+
 
 time.sleep(3)
 
@@ -97,9 +112,8 @@ try:
     mouseControl(element)
     pyautogui.click()
 except:
-    print('not found')
+    print("not found")
 
-    
 
 aggrements = elem_f(
     '//*[@id="content"]/div[2]/div[6]/div[1]/ytd-button-renderer[2]/yt-button-shape/button'
@@ -111,12 +125,15 @@ if aggrements:
     pyautogui.click()
 
 try:
-    aggrements_mobile = browser.find_element(By.CSS_SELECTOR, 'body > div.consent-bump-v2-lightbox > ytm-consent-bump-v2-renderer > div > div.dialog-scrollable-content > div.one-col-dialog-buttons > ytm-button-renderer.eom-accept > button')
+    aggrements_mobile = browser.find_element(
+        By.CSS_SELECTOR,
+        "body > div.consent-bump-v2-lightbox > ytm-consent-bump-v2-renderer > div > div.dialog-scrollable-content > div.one-col-dialog-buttons > ytm-button-renderer.eom-accept > button",
+    )
     # Get the size of the browser window
     mouseControl(aggrements_mobile)
     pyautogui.click()
 except:
-    print('not mobile')
+    print("not mobile")
 # Move the mouse to the element
 
 time.sleep(3)
@@ -150,42 +167,48 @@ if profile:
 
 time.sleep(3)
 list_videos = []
+
+
 def channel_func():
     time.sleep(3)
 
     # click on video tab
-    videoTab = browser.find_element(By.XPATH, '//*[@id="tabsContent"]/tp-yt-paper-tab[2]')
+    videoTab = browser.find_element(
+        By.XPATH, '//*[@id="tabsContent"]/tp-yt-paper-tab[2]'
+    )
     if videoTab:
         mouseControl(videoTab)
         pyautogui.click()
 
     time.sleep(3)
-     # scroll up and down 
+    # scroll up and down
     for i in range(3):
         r_scroll()
         time.sleep(2)
-     # list of videos
-    videos = browser.find_elements(By.CLASS_NAME, "ytd-thumbnail")
+    # list of videos
+    videos = browser.find_elements(By.ID, "video-title-link")
     if videos:
         for video in videos:
             href_value = video.get_attribute("href")
             if type(href_value) is str and "shorts" not in href_value:
                 list_videos.append(href_value)
-     # check list and click on video         
+    # check list and click on video
     if len(list_videos) > 0:
         choosen_video = choice(list_videos)
         browser.get(choosen_video)
         time.sleep(3)
     try:
-         # skip youtube ads
+        # skip youtube ads
         skipAds = WebDriverWait(browser, 20).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, "button.ytp-ad-skip-button"))
+            EC.visibility_of_element_located(
+                (By.CSS_SELECTOR, "button.ytp-ad-skip-button")
+            )
         )
         mouseControl(skipAds)
         pyautogui.click()
     finally:
         time.sleep(3)
-         # get youtube length
+        # get youtube length
         video_length_element = WebDriverWait(browser, 10).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, ".ytp-time-duration"))
         )
@@ -196,27 +219,38 @@ def channel_func():
         time_to_seconds = timeCalc(video_length_value)
         watch_time = time_to_seconds * 0.1
         try:
-             #  check if video is live and remove chat
-            group_chat = browser.find_element(By.CSS_SELECTOR, "#show-hide-button > ytd-toggle-button-renderer > yt-button-shape > button")
+            #  check if video is live and remove chat
+            group_chat = browser.find_element(
+                By.CSS_SELECTOR,
+                "#show-hide-button > ytd-toggle-button-renderer > yt-button-shape > button",
+            )
             group_chat.click()
         except:
-            print('no live detected')
-        try:
-             # click you dismiss youtube premium
-            youtube_trial = browser.find_element(By.CSS_SELECTOR, '#dismiss-button > yt-button-shape > button') 
-            mouseControl(youtube_trial)
-            pyautogui.click()
+            print("no live detected")
         finally:
-            time.sleep(math.floor(watch_time))
-             # click on owner channel
-            current_channel = browser.find_element(By.CSS_SELECTOR, '#owner > ytd-video-owner-renderer > a')
-            if current_channel:
-                mouseControl(current_channel)
+            try:
+                # click you dismiss youtube premium
+                youtube_trial = browser.find_element(
+                    By.CSS_SELECTOR, "#dismiss-button > yt-button-shape > button"
+                )
+                mouseControl(youtube_trial)
                 pyautogui.click()
-            # hna tji recursive
-            time.sleep(3)
+            finally:
+                time.sleep(math.floor(watch_time))
+                # click on owner channel
+                current_channel = browser.find_element(
+                    By.CSS_SELECTOR, "#owner > ytd-video-owner-renderer > a"
+                )
+                if current_channel:
+                    mouseControl(current_channel)
+                    pyautogui.click()
+                # hna tji recursive
+                time.sleep(3)
+                #  re-run the script
+                channel_func()
 
- #  run the script        
+
+#  run the script
 channel_func()
 
 print("finished")
