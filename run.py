@@ -8,13 +8,20 @@ from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 from random import randrange
 from random import choice
-import time
 import pyautogui
 import time
 import random
 import httpagentparser
 import math
+import os
+def run_vpn():
+    os.system(r'"C:\Program Files\NordVPN\NordVPN.exe" -c')
+    progress_message = "Delay in progress: {} seconds remaining."
+    for remaining_seconds in range(10, 0, -1):
+        print(progress_message.format(remaining_seconds))
+        time.sleep(1)  # Delay execution for 1 second
 
+    print("Delay complete. This message will be printed in the terminal.")
 
 # functions
 def userAgent(file):
@@ -45,11 +52,22 @@ if (
 ):
     user_agent_detect()
 
+windows = "false"
+randtrue = random.randrange(2)
+print(randtrue)
+if randtrue == 1:
+    windows = "true"
+
+
+# run nordVPN
+run_vpn()
+
 # arguments
 chrome_options = Options()
 chrome_options.add_argument(f"user-agent={user_agent_detect()}")
 chrome_options.add_argument("--mute-audio")
-# chrome_options.add_argument("--start-maximized")
+if windows == "true":
+    chrome_options.add_argument("--start-maximized")
 chrome_options.add_experimental_option("detach", True)
 chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
 
