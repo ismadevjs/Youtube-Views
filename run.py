@@ -30,7 +30,9 @@ def user_agent_detect():
     random_user_agent = user_agent.random
     return random_user_agent
 
-print(user_agent_detect())
+print(httpagentparser.simple_detect(user_agent_detect())[0])
+
+
 if (httpagentparser.simple_detect(user_agent_detect())[0] == 'Unknown OS' or httpagentparser.simple_detect(user_agent_detect())[0] == 'Windows Vista'):
     user_agent_detect()
 
@@ -128,7 +130,7 @@ if search:
         search.send_keys(letter)
         time.sleep(0.3)
 
-
+# go to search and type
 searchBtn = browser.find_element(By.ID, "search-icon-legacy")
 if searchBtn:
     time.sleep(3)
@@ -136,6 +138,8 @@ if searchBtn:
     pyautogui.click()
 
 time.sleep(3)
+
+# click on channel profile
 
 profile = WebDriverWait(browser, 20).until(
     EC.visibility_of_element_located((By.XPATH, '//*[@id="avatar-section"]/a'))
@@ -148,31 +152,32 @@ time.sleep(3)
 list_videos = []
 def channel_func():
     time.sleep(3)
+
+    # click on video tab
     videoTab = browser.find_element(By.XPATH, '//*[@id="tabsContent"]/tp-yt-paper-tab[2]')
     if videoTab:
         mouseControl(videoTab)
         pyautogui.click()
 
     time.sleep(3)
-
+     # scroll up and down 
     for i in range(3):
         r_scroll()
         time.sleep(2)
-
+     # list of videos
     videos = browser.find_elements(By.CLASS_NAME, "ytd-thumbnail")
     if videos:
         for video in videos:
             href_value = video.get_attribute("href")
             if type(href_value) is str and "shorts" not in href_value:
                 list_videos.append(href_value)
-
-channel_func()
-
-if len(list_videos) > 0:
-    choosen_video = choice(list_videos)
-    browser.get(choosen_video)
-    time.sleep(3)
+     # check list and click on video         
+    if len(list_videos) > 0:
+        choosen_video = choice(list_videos)
+        browser.get(choosen_video)
+        time.sleep(3)
     try:
+         # skip youtube ads
         skipAds = WebDriverWait(browser, 20).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, "button.ytp-ad-skip-button"))
         )
@@ -180,6 +185,7 @@ if len(list_videos) > 0:
         pyautogui.click()
     finally:
         time.sleep(3)
+         # get youtube length
         video_length_element = WebDriverWait(browser, 10).until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, ".ytp-time-duration"))
         )
@@ -190,24 +196,27 @@ if len(list_videos) > 0:
         time_to_seconds = timeCalc(video_length_value)
         watch_time = time_to_seconds * 0.1
         try:
+             #  check if video is live and remove chat
             group_chat = browser.find_element(By.CSS_SELECTOR, "#show-hide-button > ytd-toggle-button-renderer > yt-button-shape > button")
             group_chat.click()
         except:
             print('no live detected')
         try:
+             # click you dismiss youtube premium
             youtube_trial = browser.find_element(By.CSS_SELECTOR, '#dismiss-button > yt-button-shape > button') 
             mouseControl(youtube_trial)
             pyautogui.click()
         finally:
             time.sleep(math.floor(watch_time))
+             # click on owner channel
             current_channel = browser.find_element(By.CSS_SELECTOR, '#owner > ytd-video-owner-renderer > a')
             if current_channel:
                 mouseControl(current_channel)
                 pyautogui.click()
             # hna tji recursive
             time.sleep(3)
-            channel_func()
 
+ #  run the script        
+channel_func()
 
 print("finished")
-# len video and watch at least 30%
