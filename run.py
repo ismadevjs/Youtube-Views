@@ -14,6 +14,21 @@ import random
 import httpagentparser
 import math
 import os
+import requests
+import json
+
+def get_proxy():
+    response = requests.get('https://api.proxyscrape.com/?request=displayproxies&proxytype=http')
+    try:
+        response_json = response.json() 
+        print(response_json[0])
+         # Process the JSON response here
+    except json.JSONDecodeError:
+        print("Invalid JSON response:", response.text)
+
+get_proxy()
+
+
 def run_vpn():
     os.system(r'"C:\Program Files\NordVPN\NordVPN.exe" -c')
     progress_message = "Delay in progress: {} seconds remaining."
@@ -60,7 +75,7 @@ if randtrue == 1:
 
 
 # run nordVPN
-run_vpn()
+# run_vpn()
 
 # arguments
 chrome_options = Options()
@@ -211,6 +226,7 @@ def channel_func():
                 list_videos.append(href_value)
     # check list and click on video
     if len(list_videos) > 0:
+        choosen_video = choice(list_videos)
         choosen_video = choice(list_videos)
         browser.get(choosen_video)
         time.sleep(3)
