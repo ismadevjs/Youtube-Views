@@ -17,16 +17,18 @@ import os
 import requests
 import json
 
+
 def get_proxy():
-    response = requests.get('https://api.proxyscrape.com/?request=displayproxies&proxytype=http')
+    response = requests.get(
+        "https://api.proxyscrape.com/?request=displayproxies&proxytype=socks5"
+    )
     try:
-        response_json = response.json() 
-        print(response_json[0])
-         # Process the JSON response here
+        lines = response.content.decode("utf-8").splitlines()
+        ip_ports = [line.split(":") for line in lines]
+        choosen_addr = choice(ip_ports)
+        return choosen_addr[0], choosen_addr[1]
     except json.JSONDecodeError:
         print("Invalid JSON response:", response.text)
-
-get_proxy()
 
 
 def run_vpn():
@@ -37,6 +39,7 @@ def run_vpn():
         time.sleep(1)  # Delay execution for 1 second
 
     print("Delay complete. This message will be printed in the terminal.")
+
 
 # functions
 def userAgent(file):
@@ -56,7 +59,7 @@ def user_agent_detect():
     return random_user_agent
 
 
-print(httpagentparser.simple_detect(user_agent_detect())[1])
+# print(httpagentparser.simple_detect(user_agent_detect())[1])
 
 
 if (
@@ -69,7 +72,6 @@ if (
 
 windows = "false"
 randtrue = random.randrange(2)
-print(randtrue)
 if randtrue == 1:
     windows = "true"
 
@@ -77,8 +79,15 @@ if randtrue == 1:
 # run nordVPN
 # run_vpn()
 
+ip, port = get_proxy()
+print(f'IP: {ip} PORT: {port}')
+# exit(1)
+
 # arguments
 chrome_options = Options()
+chrome_options.add_argument(
+    "--proxy-server={0}:{1}".format(ip, port)
+)
 chrome_options.add_argument(f"user-agent={user_agent_detect()}")
 chrome_options.add_argument("--mute-audio")
 if windows == "true":
