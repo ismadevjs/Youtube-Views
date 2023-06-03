@@ -86,7 +86,7 @@ def mouseControl(elm):
     time.sleep(1.5)
 
 
-print(type(httpagentparser.simple_detect(user_agent_detect())[0]))
+print((httpagentparser.simple_detect(user_agent_detect())[0]))
 print(httpagentparser.simple_detect(user_agent_detect())[1])
 
 
@@ -119,6 +119,10 @@ if randtrue == 1:
 # print(f'IP: {ip} PORT: {port}')
 # exit(1)
 def run_it():
+    global channel_back
+    global counter
+    channel_back = "false"
+    counter = 0
     # arguments
     options = Options()
     options.add_argument(f"user-agent={user_agent_detect()}")
@@ -139,10 +143,10 @@ def run_it():
 
     def r_scroll():
         browser.execute_script(
-            "window.scrollTo({ top: " + str(randrange(2000)) + ", behavior: 'smooth' })"
+            "window.scrollTo({ top: " + str(randrange(4020)) + ", behavior: 'smooth' })"
         )
         time.sleep(4)
-
+    
     browser = webdriver.Chrome(options=options)
     browser.get("https://youtube.com")
 
@@ -156,7 +160,8 @@ def run_it():
         mouseControl(element)
         pyautogui.click()
     except:
-        pass
+        browser.close()
+        run_it()
 
     aggrements = elem_f(
         '//*[@id="content"]/div[2]/div[6]/div[1]/ytd-button-renderer[2]/yt-button-shape/button'
@@ -209,11 +214,14 @@ def run_it():
         pyautogui.click()
 
     time.sleep(3)
-    list_videos = []
+    # list_videos = []
 
     def channel_func():
+        channel_back = "false"
         time.sleep(3)
-
+        if channel_back == "true":
+            browser.close()
+            run_it()
         # click on video tab
         videoTab = browser.find_element(
             By.XPATH, '//*[@id="tabsContent"]/tp-yt-paper-tab[2]'
@@ -227,23 +235,25 @@ def run_it():
         for i in range(3):
             r_scroll()
             time.sleep(2)
+
+        pyautogui.click()
+        time.sleep(3)
         # list of videos
-        videos = browser.find_elements(By.ID, "video-title-link")
-        if videos:
-            for video in videos:
-                href_value = video.get_attribute("href")
-                if type(href_value) is str and "shorts" not in href_value:
-                    list_videos.append(href_value)
+        # videos = browser.find_elements(By.ID, "video-title-link")
+        # if videos:
+        #     for video in videos:
+        #         href_value = video.get_attribute("href")
+        #         if type(href_value) is str and "shorts" not in href_value:
+        #             list_videos.append(href_value)
         # check list and click on video
-        if len(list_videos) > 0:
-            for k in range(6):
-                choosen_video = choice(list_videos)
-            #  hadi tab original 1
-            # Simulate the keyboard actions to open the link in a new tab
-            browser.find_element(By.TAG_NAME, "body").send_keys(Keys.LEFT_CONTROL, "t")
-            browser.switch_to.window(browser.window_handles[-1])
-            browser.get(choosen_video)
-            time.sleep(3)
+        # if len(list_videos) > 0:
+        #     for k in range(6):
+        #         choosen_video = choice(list_videos)
+        #  hadi tab original 1
+        # Simulate the keyboard actions to open the link in a new tab
+        # browser.find_element(By.TAG_NAME, "body").send_keys(Keys.LEFT_CONTROL, "t")
+        # browser.switch_to.window(browser.window_handles[-1])
+        # browser.get(choosen_video)
 
         try:
             # ads detect
@@ -252,19 +262,25 @@ def run_it():
             )
             mouseControl(ads_type)
             pyautogui.click()
+            counter += 1
+            # Scroll down
             time.sleep(4)
-            r_scroll()
-            r_scroll()
-            r_scroll()
-            time.sleep(10)
+            pyautogui.scroll(3)
+            # time.sleep(2)
+            # pyautogui.scroll(randrange(-60))
+            # time.sleep(2)
+            # pyautogui.scroll(randrange(40))
+            # time.sleep(10)
             # here comes mouseControl
             # Close the new tab
             pyautogui.hotkey("ctrl", "w")
-            
-            try : 
-                 # ads detect
+
+            try:
+                # ads detect
                 play_video = WebDriverWait(browser, 20).until(
-                    EC.visibility_of_element_located((By.CSS_SELECTOR, ".ytp-play-button"))
+                    EC.visibility_of_element_located(
+                        (By.CSS_SELECTOR, ".ytp-play-button")
+                    )
                 )
                 mouseControl(play_video)
                 pyautogui.click()
@@ -297,7 +313,7 @@ def run_it():
                 video_length_value = video_length_element.text
                 time.sleep(3)
                 time_to_seconds = timeCalc(video_length_value)
-                watch_time = time_to_seconds * 0.2
+                watch_time = randrange(180)
             except:
                 pass
             finally:
@@ -319,6 +335,8 @@ def run_it():
                     )
                     mouseControl(youtube_trial)
                     pyautogui.click()
+                except:
+                    pass
                 finally:
                     time.sleep(math.floor(watch_time))
                     # click on owner channel
@@ -335,6 +353,7 @@ def run_it():
                         # hna tji recursive
                         time.sleep(3)
                         #  re-run the script
+                        channel_back = "true"
                         channel_func()
 
     #  run the script
