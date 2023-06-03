@@ -300,6 +300,8 @@ def run_it():
                 watch_time = time_to_seconds * 0.2
             except:
                 pass
+            finally:
+                pass
             try:
                 #  check if video is live and remove chat
                 group_chat = browser.find_element(
