@@ -5,6 +5,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+
 from fake_useragent import UserAgent
 from random import randrange
 from random import choice
@@ -13,39 +15,34 @@ import time
 import random
 import httpagentparser
 import math
-import os
-import requests
-import json
-
-
-def get_proxy():
-    response = requests.get(
-        "https://api.proxyscrape.com/?request=displayproxies&proxytype=socks5"
-    )
-    try:
-        lines = response.content.decode("utf-8").splitlines()
-        ip_ports = [line.split(":") for line in lines]
-        choosen_addr = choice(ip_ports)
-        return choosen_addr[0], choosen_addr[1]
-    except json.JSONDecodeError:
-        print("Invalid JSON response:", response.text)
-
-
-def run_vpn():
-    os.system(r'"C:\Program Files\NordVPN\NordVPN.exe" -c')
-    progress_message = "Delay in progress: {} seconds remaining."
-    for remaining_seconds in range(10, 0, -1):
-        print(progress_message.format(remaining_seconds))
-        time.sleep(1)  # Delay execution for 1 second
-
-    print("Delay complete. This message will be printed in the terminal.")
-
+from pygetwindow import getAllTitles
+from win10toast import ToastNotifier
+from nordvpn_switcher import initialize_VPN, rotate_VPN
 
 # functions
-def userAgent(file):
-    with open(file, "r") as f:
-        lines = f.readlines()
-        return random.choice(lines)
+
+def nordVpn():
+    instructions = initialize_VPN(area_input=["random countries europe 8"])
+    for i in range(1):
+        rotate_VPN(instructions)  # refer to the instructions variable here
+        time.sleep(5)
+
+
+def display_notification(title, message):
+    toaster = ToastNotifier()
+    toaster.show_toast(title, message, duration=5)
+
+
+def detect_windows_notifications():
+    previous_windows = getAllTitles()
+    while True:
+        current_windows = getAllTitles()
+        new_notifications = [
+            win for win in current_windows if win not in previous_windows
+        ]
+        for notification in new_notifications:
+            display_notification(notification, "")
+        previous_windows = current_windows
 
 
 def goto(linenum):
@@ -57,52 +54,6 @@ def user_agent_detect():
     user_agent = UserAgent()
     random_user_agent = user_agent.random
     return random_user_agent
-
-
-# print(httpagentparser.simple_detect(user_agent_detect())[1])
-
-
-if (
-    httpagentparser.simple_detect(user_agent_detect())[0] == "Unknown OS"
-    or "Microsoft Internet Explorer"
-    not in httpagentparser.simple_detect(user_agent_detect())[1]
-    or httpagentparser.simple_detect(user_agent_detect())[0] == "Windows Vista"
-):
-    user_agent_detect()
-
-windows = "false"
-randtrue = random.randrange(2)
-if randtrue == 1:
-    windows = "true"
-
-
-# run nordVPN
-# run_vpn()
-
-ip, port = get_proxy()
-print(f'IP: {ip} PORT: {port}')
-# exit(1)
-
-# arguments
-chrome_options = Options()
-chrome_options.add_argument(
-    "--proxy-server={0}:{1}".format(ip, port)
-)
-chrome_options.add_argument(f"user-agent={user_agent_detect()}")
-chrome_options.add_argument("--mute-audio")
-if windows == "true":
-    chrome_options.add_argument("--start-maximized")
-chrome_options.add_experimental_option("detach", True)
-chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-
-
-browser = webdriver.Chrome(chrome_options=chrome_options)
-browser.get("http://youtube.com/")
-
-time.sleep(3)
-
-# functions
-
 
 def timeCalc(val):
     tm = val.split(":")
@@ -118,9 +69,12 @@ def timeCalc(val):
 
 
 def elem_f(valeur):
-    return WebDriverWait(browser, 20).until(
+    try:
+        return WebDriverWait(browser, 20).until(
         EC.visibility_of_element_located((By.XPATH, valeur))
     )
+    except:
+        pass
 
 
 def r_scroll():
@@ -138,12 +92,56 @@ def mouseControl(elm):
     pyautogui.moveTo(absolute_x, absolute_y, duration=0.5)
     time.sleep(1.5)
 
+def tab():
+    browser.switch_to.window(browser.window_handles[-1])
 
-def click_on_current_youtube_channel():
-    return
+print(httpagentparser.simple_detect(user_agent_detect())[0])
+print(httpagentparser.simple_detect(user_agent_detect())[1])
 
 
-time.sleep(3)
+if (
+    "Microsoft Internet Explorer"
+    not in httpagentparser.simple_detect(user_agent_detect())[0]
+    or "Windows Vista" not in httpagentparser.simple_detect(user_agent_detect())[1]
+    or httpagentparser.simple_detect(user_agent_detect())[0] == ""
+):
+    user_agent_detect()
+
+windows = "false"
+randtrue = random.randrange(2)
+if randtrue == 1:
+    windows = "true"
+
+nordVpn()
+# detect_windows_notifications()
+# ip, port = get_proxy()
+
+# Configure proxy settings
+
+# proxy = Proxy()
+# proxy.proxy_type = ProxyType.MANUAL
+# proxy.http_proxy = f"{proxy_host}:{proxy_port}"
+# proxy.ssl_proxy = f"{proxy_host}:{proxy_port}"
+
+
+# print(f'IP: {ip} PORT: {port}')
+# exit(1)
+
+# arguments
+options = Options()
+options.add_argument(f"user-agent={user_agent_detect()}")
+options.add_argument("--mute-audio")
+if windows == "true":
+    options.add_argument("--start-maximized")
+options.add_experimental_option("detach", True)
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+# options.add_argument("--proxy-server=http://"+proxy.ssl_proxy)
+
+
+browser = webdriver.Chrome(options=options)
+browser.get("https://youtube.com")
+
+time.sleep(6)
 
 try:
     pasteXpath = "//*[@id='return-to-youtube']"
@@ -237,17 +235,26 @@ def channel_func():
     if len(list_videos) > 0:
         choosen_video = choice(list_videos)
         choosen_video = choice(list_videos)
+        browser.switch_to.window(browser.window_handles[-1])
         browser.get(choosen_video)
         time.sleep(3)
     try:
         # skip youtube ads
-        skipAds = WebDriverWait(browser, 20).until(
+        # skipAds = WebDriverWait(browser, 20).until(
+        #     EC.visibility_of_element_located(
+        #         (By.CSS_SELECTOR, "button.ytp-ad-skip-button")
+        #     )
+        # )
+        # ads detect
+        ads_type = WebDriverWait(browser, 20).until(
             EC.visibility_of_element_located(
-                (By.CSS_SELECTOR, "button.ytp-ad-skip-button")
+                (By.CSS_SELECTOR, ".ytp-ad-button")
             )
         )
-        mouseControl(skipAds)
+        mouseControl(ads_type)
         pyautogui.click()
+    except:
+        pass
     finally:
         time.sleep(3)
         # get youtube length
