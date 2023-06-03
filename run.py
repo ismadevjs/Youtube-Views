@@ -236,7 +236,8 @@ def run_it():
                     list_videos.append(href_value)
         # check list and click on video
         if len(list_videos) > 0:
-            choosen_video = choice(list_videos)
+            for k in range(6):
+                choosen_video = choice(list_videos)
             #  hadi tab original 1
             # Simulate the keyboard actions to open the link in a new tab
             browser.find_element(By.TAG_NAME, "body").send_keys(Keys.LEFT_CONTROL, "t")
@@ -251,12 +252,24 @@ def run_it():
             )
             mouseControl(ads_type)
             pyautogui.click()
+            time.sleep(4)
+            r_scroll()
+            r_scroll()
+            r_scroll()
             time.sleep(10)
             # here comes mouseControl
-
             # Close the new tab
             pyautogui.hotkey("ctrl", "w")
-
+            
+            try : 
+                 # ads detect
+                play_video = WebDriverWait(browser, 20).until(
+                    EC.visibility_of_element_located((By.CSS_SELECTOR, ".ytp-play-button"))
+                )
+                mouseControl(play_video)
+                pyautogui.click()
+            except:
+                pass
         except:
             pass
         finally:
@@ -307,16 +320,20 @@ def run_it():
                 finally:
                     time.sleep(math.floor(watch_time))
                     # click on owner channel
-                    current_channel = browser.find_element(
-                        By.CSS_SELECTOR, "#owner > ytd-video-owner-renderer > a"
-                    )
-                    if current_channel:
+                    try:
+                        current_channel = browser.find_element(
+                            By.CSS_SELECTOR, "#owner > ytd-video-owner-renderer > a"
+                        )
+
                         mouseControl(current_channel)
                         pyautogui.click()
-                    # hna tji recursive
-                    time.sleep(3)
-                    #  re-run the script
-                    channel_func()
+                    except:
+                        pass
+                    finally:
+                        # hna tji recursive
+                        time.sleep(3)
+                        #  re-run the script
+                        channel_func()
 
     #  run the script
     channel_func()
