@@ -6,3 +6,5 @@ You should have nordVPN only.
 Enjoy!
 
 Donate : https://buy.stripe.com/cN202zci2bhj61q28s
+
+contact if any issues
